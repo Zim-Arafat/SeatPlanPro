@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Plan Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Exam Seat Plan Generator</h1>
+            <p class="text-gray-600">Create, manage, and distribute seating arrangements effortlessly.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Configuration -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 border-b pb-2">Configuration</h2>
+
+                <!-- Exam Details -->
+                <div class="mb-6">
+                    <h3 class="font-medium mb-2">1. Exam Details</h3>
+                    <div class="space-y-3">
+                        <input type="text" placeholder="Exam Name (e.g., Midterm)" class="w-full p-2 border rounded-md">
+                        <input type="date" class="w-full p-2 border rounded-md">
+                        <select class="w-full p-2 border rounded-md">
+                            <option>Select Shift (1st / 2nd)</option>
+                            <option>1st Shift (9 AM - 12 PM)</option>
+                            <option>2nd Shift (1 PM - 4 PM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Room Configuration -->
+                <div class="mb-6">
+                    <h3 class="font-medium mb-2">2. Room & Layout</h3>
+                    <div class="space-y-3">
+                        <select class="w-full p-2 border rounded-md">
+                            <option>Select Room</option>
+                            <option>Room 101 (Capacity: 40)</option>
+                            <option>Room 102 (Capacity: 35)</option>
+                            <option>Auditorium (Capacity: 150)</option>
+                        </select>
+                         <div class="flex items-center space-x-2">
+                            <input type="number" placeholder="Rows" class="w-1/2 p-2 border rounded-md">
+                            <input type="number" placeholder="Cols" class="w-1/2 p-2 border rounded-md">
+                        </div>
+                        <select class="w-full p-2 border rounded-md">
+                            <option>Select Pattern</option>
+                            <option>Linear</option>
+                            <option>Serpentine</option>
+                            <option>Block</option>
+                            <option>Randomized</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Data Input -->
+                <div class="mb-6">
+                    <h3 class="font-medium mb-2">3. Data Input</h3>
+                     <div class="space-y-3">
+                        <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-md">Upload Student List (.csv)</button>
+                        <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-md">Upload Teacher List (.csv)</button>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <div>
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300">
+                        Generate Seat Plan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Preview & Output -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 border-b pb-2">Preview & Output</h2>
+
+                <!-- Seating Plan Preview -->
+                <div class="bg-gray-50 p-4 rounded-lg h-96 overflow-auto border">
+                    <div class="grid grid-cols-5 gap-4 text-center">
+                        <!-- Sample Seats -->
+                        <div class="bg-blue-100 p-2 rounded-md">
+                            <div class="font-bold text-blue-800">Seat 1</div>
+                            <div class="text-sm text-gray-600">708080</div>
+                        </div>
+                        <div class="bg-blue-100 p-2 rounded-md">
+                            <div class="font-bold text-blue-800">Seat 2</div>
+                            <div class="text-sm text-gray-600">708081</div>
+                        </div>
+                        <div class="bg-green-100 p-2 rounded-md">
+                            <div class="font-bold text-green-800">Seat 3</div>
+                            <div class="text-sm text-gray-600">CST-101</div>
+                        </div>
+                         <div class="bg-green-100 p-2 rounded-md">
+                            <div class="font-bold text-green-800">Seat 4</div>
+                            <div class="text-sm text-gray-600">CST-102</div>
+                        </div>
+                        <div class="bg-yellow-100 p-2 rounded-md">
+                            <div class="font-bold text-yellow-800">Seat 5</div>
+                            <div class="text-sm text-gray-600">EE-201</div>
+                        </div>
+                         <!-- Add more seats to demonstrate layout -->
+                        <div class="bg-blue-100 p-2 rounded-md"><div class="font-bold text-blue-800">Seat 6</div><div class="text-sm text-gray-600">708082</div></div>
+                        <div class="bg-blue-100 p-2 rounded-md"><div class="font-bold text-blue-800">Seat 7</div><div class="text-sm text-gray-600">708083</div></div>
+                        <div class="bg-green-100 p-2 rounded-md"><div class="font-bold text-green-800">Seat 8</div><div class="text-sm text-gray-600">CST-103</div></div>
+                        <div class="bg-green-100 p-2 rounded-md"><div class="font-bold text-green-800">Seat 9</div><div class="text-sm text-gray-600">CST-104</div></div>
+                        <div class="bg-yellow-100 p-2 rounded-md"><div class="font-bold text-yellow-800">Seat 10</div><div class="text-sm text-gray-600">EE-202</div></div>
+                    </div>
+                </div>
+
+                <!-- Output Options -->
+                <div class="mt-6">
+                    <h3 class="font-medium mb-3">Download & Distribute</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md">
+                            Master PDF
+                        </button>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md">
+                            Class-wise Sheets
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md">
+                            Invigilator Handouts
+                        </button>
+                    </div>
+                </div>
+
+                 <!-- Invigilator Info -->
+                <div class="mt-6 border-t pt-4">
+                     <h3 class="font-medium mb-2">Assigned Invigilator</h3>
+                     <div class="bg-gray-100 p-3 rounded-md">
+                        <p><strong>Room 101:</strong> Dr. Jane Doe</p>
+                        <p><strong>Room 102:</strong> Prof. John Smith</p>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
