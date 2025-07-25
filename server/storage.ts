@@ -188,8 +188,8 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
-  async createStudentsBatch(students: InsertStudent[]): Promise<Student[]> {
-    return await db.insert(students).values(students).returning();
+  async createStudentsBatch(studentsData: InsertStudent[]): Promise<Student[]> {
+    return await db.insert(students).values(studentsData).returning();
   }
 
   async getExams(): Promise<ExamWithDetails[]> {
@@ -291,35 +291,44 @@ export class DatabaseStorage implements IStorage {
       buildingData.map(building => this.createBuilding(building))
     );
 
-    // Initialize rooms
+    // Initialize rooms based on your exact building structure
     const roomData: InsertRoom[] = [
-      // Building 1 rooms
+      // Building 1 - Ground Floor (1101-1135)
       ...Array.from({ length: 35 }, (_, i) => ({
         number: `110${(i + 1).toString().padStart(2, '0')}`,
         name: `Room 110${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[0].id,
-        floor: 1,
-        capacity: i === 0 ? 65 : (55 + (i % 10)), // Vary capacity between 55-65
+        floor: 0, // Ground floor
+        capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
         rows: 8,
         columns: 8,
         roomType: "standard",
       })),
-      ...Array.from({ length: 35 }, (_, i) => ({
-        number: `120${(i + 1).toString().padStart(2, '0')}`,
-        name: `Room 120${(i + 1).toString().padStart(2, '0')}`,
-        buildingId: createdBuildings[0].id,
-        floor: 2,
-        capacity: i === 18 ? 105 : (50 + (i % 15)), // Conference room 1219 has 105 capacity
-        rows: i === 18 ? 12 : 8,
-        columns: i === 18 ? 9 : 8,
-        roomType: i === 18 ? "conference" : "standard",
-      })),
-      // Special rooms 1201-A and 1201-B
+      
+      // Building 1 - First Floor (1201-1235) + special rooms 1201-A, 1201-B, conference 1219
+      ...Array.from({ length: 35 }, (_, i) => {
+        const roomNum = `120${(i + 1).toString().padStart(2, '0')}`;
+        // Skip 1201 as we'll add 1201-A and 1201-B separately
+        if (roomNum === "1201") return null;
+        
+        return {
+          number: roomNum,
+          name: `Room ${roomNum}`,
+          buildingId: createdBuildings[0].id,
+          floor: 1,
+          capacity: roomNum === "1219" ? 105 : Math.floor(Math.random() * 16) + 50, // Conference room 1219
+          rows: roomNum === "1219" ? 12 : 8,
+          columns: roomNum === "1219" ? 9 : 8,
+          roomType: roomNum === "1219" ? "conference" : "standard",
+        };
+      }).filter(Boolean) as InsertRoom[],
+      
+      // Special rooms 1201-A and 1201-B (50 capacity each)
       {
         number: "1201-A",
         name: "Class 1201-A",
         buildingId: createdBuildings[0].id,
-        floor: 2,
+        floor: 1,
         capacity: 50,
         rows: 7,
         columns: 8,
@@ -329,42 +338,37 @@ export class DatabaseStorage implements IStorage {
         number: "1201-B",
         name: "Class 1201-B",
         buildingId: createdBuildings[0].id,
-        floor: 2,
+        floor: 1,
         capacity: 50,
         rows: 7,
         columns: 8,
         roomType: "standard",
       },
-      // Floor 3 with halls
-      ...Array.from({ length: 35 }, (_, i) => {
+      
+      // Building 1 - Second Floor (1301-1335-B) with halls 1335-A and 1335-B
+      ...Array.from({ length: 34 }, (_, i) => {
         const roomNum = `130${(i + 1).toString().padStart(2, '0')}`;
-        let capacity = 55 + (i % 10);
-        let roomType = "standard";
-        let rows = 8;
-        let columns = 8;
-        
-        if (roomNum === "1335") {
-          // This will be split into 1335-A and 1335-B
-          return null;
-        }
+        // Skip 1335 as we'll add 1335-A and 1335-B separately
+        if (roomNum === "1335") return null;
         
         return {
           number: roomNum,
           name: `Room ${roomNum}`,
           buildingId: createdBuildings[0].id,
-          floor: 3,
-          capacity,
-          rows,
-          columns,
-          roomType,
+          floor: 2,
+          capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
+          rows: 8,
+          columns: 8,
+          roomType: "standard",
         };
       }).filter(Boolean) as InsertRoom[],
-      // Special halls 1335-A and 1335-B
+      
+      // Special halls 1335-A and 1335-B (70 capacity each)
       {
         number: "1335-A",
         name: "Hall 1335-A",
         buildingId: createdBuildings[0].id,
-        floor: 3,
+        floor: 2,
         capacity: 70,
         rows: 9,
         columns: 8,
@@ -374,39 +378,44 @@ export class DatabaseStorage implements IStorage {
         number: "1335-B",
         name: "Hall 1335-B",
         buildingId: createdBuildings[0].id,
-        floor: 3,
+        floor: 2,
         capacity: 70,
         rows: 9,
         columns: 8,
         roomType: "hall",
       },
-      // Building 2 rooms
+      
+      // Building 2 - Ground Floor (2101-2120)
       ...Array.from({ length: 20 }, (_, i) => ({
         number: `210${(i + 1).toString().padStart(2, '0')}`,
         name: `Room 210${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[1].id,
-        floor: 1,
-        capacity: 50 + (i % 15),
+        floor: 0,
+        capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
         rows: 8,
         columns: 8,
         roomType: "standard",
       })),
+      
+      // Building 2 - First Floor (2201-2219)
       ...Array.from({ length: 19 }, (_, i) => ({
         number: `220${(i + 1).toString().padStart(2, '0')}`,
         name: `Room 220${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[1].id,
-        floor: 2,
-        capacity: 50 + (i % 15),
+        floor: 1,
+        capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
         rows: 8,
         columns: 8,
         roomType: "standard",
       })),
+      
+      // Building 2 - Second Floor (2301-2319)
       ...Array.from({ length: 19 }, (_, i) => ({
         number: `230${(i + 1).toString().padStart(2, '0')}`,
         name: `Room 230${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[1].id,
-        floor: 3,
-        capacity: 50 + (i % 15),
+        floor: 2,
+        capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
         rows: 8,
         columns: 8,
         roomType: "standard",

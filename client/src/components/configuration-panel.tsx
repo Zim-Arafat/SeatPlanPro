@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarIcon, BuildingIcon, UploadIcon, PlayIcon } from 'lucide-react';
+import { CalendarIcon, BuildingIcon, UploadIcon, PlayIcon, CheckCircleIcon, AlertCircleIcon, LoaderIcon } from 'lucide-react';
 import { useExamStore } from '@/store/exam-store';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -39,6 +39,8 @@ export function ConfigurationPanel() {
 
   const [studentFile, setStudentFile] = useState<File | null>(null);
   const [invigilatorFile, setInvigilatorFile] = useState<File | null>(null);
+  const [studentUploadStatus, setStudentUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [invigilatorUploadStatus, setInvigilatorUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
 
   const form = useForm({
     resolver: zodResolver(examFormSchema),
@@ -65,7 +67,7 @@ export function ConfigurationPanel() {
     enabled: !!roomSelection.buildingId,
   });
 
-  const { data: students = [] } = useQuery({
+  const { data: students = [] } = useQuery<Student[]>({
     queryKey: ['/api/students', examData.departmentId],
     enabled: !!examData.departmentId,
   });
@@ -109,28 +111,48 @@ export function ConfigurationPanel() {
 
   const uploadStudentsMutation = useMutation({
     mutationFn: async (students: any[]) => {
+      setStudentUploadStatus('uploading');
       const response = await apiRequest('POST', '/api/students/upload', { students });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/students'] });
+      setStudentUploadStatus('success');
       toast({
         title: 'Success',
-        description: 'Students uploaded successfully!',
+        description: `${data.count} students uploaded successfully!`,
+      });
+    },
+    onError: () => {
+      setStudentUploadStatus('error');
+      toast({
+        title: 'Error',
+        description: 'Failed to upload students. Please check the file format.',
+        variant: 'destructive',
       });
     },
   });
 
   const uploadInvigilatorsMutation = useMutation({
     mutationFn: async (invigilators: any[]) => {
+      setInvigilatorUploadStatus('uploading');
       const response = await apiRequest('POST', '/api/invigilators/upload', { invigilators });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/invigilators'] });
+      setInvigilatorUploadStatus('success');
       toast({
         title: 'Success',
-        description: 'Invigilators uploaded successfully!',
+        description: `${data.count} invigilators uploaded successfully!`,
+      });
+    },
+    onError: () => {
+      setInvigilatorUploadStatus('error');
+      toast({
+        title: 'Error',
+        description: 'Failed to upload invigilators. Please check the file format.',
+        variant: 'destructive',
       });
     },
   });
@@ -409,7 +431,12 @@ export function ConfigurationPanel() {
         <CardContent className="space-y-4">
           <div>
             <Label>Student List</Label>
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
+            <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+              studentUploadStatus === 'success' ? 'border-green-300 bg-green-50' :
+              studentUploadStatus === 'error' ? 'border-red-300 bg-red-50' :
+              studentUploadStatus === 'uploading' ? 'border-blue-300 bg-blue-50' :
+              'border-muted-foreground/25 hover:border-primary/50'
+            }`}>
               <input
                 type="file"
                 accept=".csv"
@@ -417,25 +444,60 @@ export function ConfigurationPanel() {
                   const file = e.target.files?.[0];
                   if (file) {
                     setStudentFile(file);
+                    setStudentUploadStatus('idle');
                     handleFileUpload(file, 'students');
                   }
                 }}
                 className="hidden"
                 id="student-upload"
+                disabled={studentUploadStatus === 'uploading'}
               />
               <label htmlFor="student-upload" className="cursor-pointer">
-                <svg className="mx-auto h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <p className="mt-2 text-sm text-muted-foreground">Click to upload CSV file</p>
-                <p className="text-xs text-muted-foreground">Format: Roll Number, Name, Department</p>
+                <div className="flex flex-col items-center">
+                  {studentUploadStatus === 'uploading' && (
+                    <LoaderIcon className="mx-auto h-8 w-8 text-blue-500 animate-spin" />
+                  )}
+                  {studentUploadStatus === 'success' && (
+                    <CheckCircleIcon className="mx-auto h-8 w-8 text-green-500" />
+                  )}
+                  {studentUploadStatus === 'error' && (
+                    <AlertCircleIcon className="mx-auto h-8 w-8 text-red-500" />
+                  )}
+                  {studentUploadStatus === 'idle' && (
+                    <svg className="mx-auto h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  )}
+                  <p className={`mt-2 text-sm ${
+                    studentUploadStatus === 'success' ? 'text-green-600' :
+                    studentUploadStatus === 'error' ? 'text-red-600' :
+                    studentUploadStatus === 'uploading' ? 'text-blue-600' :
+                    'text-muted-foreground'
+                  }`}>
+                    {studentUploadStatus === 'uploading' ? 'Uploading...' :
+                     studentUploadStatus === 'success' ? `File uploaded successfully!` :
+                     studentUploadStatus === 'error' ? 'Upload failed' :
+                     'Click to upload CSV file'}
+                  </p>
+                  {studentUploadStatus === 'idle' && (
+                    <p className="text-xs text-muted-foreground">Format: Roll Number, Name, Department</p>
+                  )}
+                  {studentFile && studentUploadStatus !== 'uploading' && (
+                    <p className="text-xs text-muted-foreground mt-1">Selected: {studentFile.name}</p>
+                  )}
+                </div>
               </label>
             </div>
           </div>
           
           <div>
             <Label>Invigilator List</Label>
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
+            <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+              invigilatorUploadStatus === 'success' ? 'border-green-300 bg-green-50' :
+              invigilatorUploadStatus === 'error' ? 'border-red-300 bg-red-50' :
+              invigilatorUploadStatus === 'uploading' ? 'border-blue-300 bg-blue-50' :
+              'border-muted-foreground/25 hover:border-primary/50'
+            }`}>
               <input
                 type="file"
                 accept=".csv"
@@ -443,18 +505,48 @@ export function ConfigurationPanel() {
                   const file = e.target.files?.[0];
                   if (file) {
                     setInvigilatorFile(file);
+                    setInvigilatorUploadStatus('idle');
                     handleFileUpload(file, 'invigilators');
                   }
                 }}
                 className="hidden"
                 id="invigilator-upload"
+                disabled={invigilatorUploadStatus === 'uploading'}
               />
               <label htmlFor="invigilator-upload" className="cursor-pointer">
-                <svg className="mx-auto h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <p className="mt-2 text-sm text-muted-foreground">Click to upload CSV file</p>
-                <p className="text-xs text-muted-foreground">Format: Name, Designation, Department</p>
+                <div className="flex flex-col items-center">
+                  {invigilatorUploadStatus === 'uploading' && (
+                    <LoaderIcon className="mx-auto h-8 w-8 text-blue-500 animate-spin" />
+                  )}
+                  {invigilatorUploadStatus === 'success' && (
+                    <CheckCircleIcon className="mx-auto h-8 w-8 text-green-500" />
+                  )}
+                  {invigilatorUploadStatus === 'error' && (
+                    <AlertCircleIcon className="mx-auto h-8 w-8 text-red-500" />
+                  )}
+                  {invigilatorUploadStatus === 'idle' && (
+                    <svg className="mx-auto h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  )}
+                  <p className={`mt-2 text-sm ${
+                    invigilatorUploadStatus === 'success' ? 'text-green-600' :
+                    invigilatorUploadStatus === 'error' ? 'text-red-600' :
+                    invigilatorUploadStatus === 'uploading' ? 'text-blue-600' :
+                    'text-muted-foreground'
+                  }`}>
+                    {invigilatorUploadStatus === 'uploading' ? 'Uploading...' :
+                     invigilatorUploadStatus === 'success' ? `File uploaded successfully!` :
+                     invigilatorUploadStatus === 'error' ? 'Upload failed' :
+                     'Click to upload CSV file'}
+                  </p>
+                  {invigilatorUploadStatus === 'idle' && (
+                    <p className="text-xs text-muted-foreground">Format: Name, Designation, Department</p>
+                  )}
+                  {invigilatorFile && invigilatorUploadStatus !== 'uploading' && (
+                    <p className="text-xs text-muted-foreground mt-1">Selected: {invigilatorFile.name}</p>
+                  )}
+                </div>
               </label>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertExamSchema, insertStudentSchema, insertInvigilatorSchema } from "@shared/schema";
+import { insertExamSchema, insertStudentSchema, insertInvigilatorSchema, type InsertInvigilator } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -61,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { invigilators } = req.body;
       
       // Validate each invigilator
-      const validatedInvigilators = invigilators.map((inv: any) => 
+      const validatedInvigilators = invigilators.map((inv: InsertInvigilator) => 
         insertInvigilatorSchema.parse(inv)
       );
       
