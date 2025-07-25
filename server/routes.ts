@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       const results = await Promise.all(
-        validatedInvigilators.map(inv => storage.createInvigilator(inv))
+        validatedInvigilators.map((inv: InsertInvigilator) => storage.createInvigilator(inv))
       );
       
       res.json({ success: true, count: results.length });
@@ -97,14 +97,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { students } = req.body;
       
+      if (!students || !Array.isArray(students)) {
+        return res.status(400).json({ error: "Students array is required" });
+      }
+      
+      console.log("Received students:", students.length, "students");
+      console.log("First student:", students[0]);
+      
       // Validate each student
-      const validatedStudents = students.map((student: any) => 
+      const validatedStudents = students.map((student: InsertStudent) => 
         insertStudentSchema.parse(student)
       );
       
+      console.log("Validated students:", validatedStudents.length);
+      
       const results = await storage.createStudentsBatch(validatedStudents);
+      console.log("Created students:", results.length);
+      
       res.json({ success: true, count: results.length });
     } catch (error) {
+      console.error("Student upload error:", error);
       res.status(400).json({ error: "Failed to upload students", details: error });
     }
   });
