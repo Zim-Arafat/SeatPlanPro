@@ -295,8 +295,8 @@ export class DatabaseStorage implements IStorage {
     const roomData: InsertRoom[] = [
       // Building 1 - Ground Floor (1101-1135)
       ...Array.from({ length: 35 }, (_, i) => ({
-        number: `110${(i + 1).toString().padStart(2, '0')}`,
-        name: `Room 110${(i + 1).toString().padStart(2, '0')}`,
+        number: `11${(i + 1).toString().padStart(2, '0')}`,
+        name: `Room 11${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[0].id,
         floor: 0, // Ground floor
         capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
@@ -307,7 +307,7 @@ export class DatabaseStorage implements IStorage {
       
       // Building 1 - First Floor (1201-1235) + special rooms 1201-A, 1201-B, conference 1219
       ...Array.from({ length: 35 }, (_, i) => {
-        const roomNum = `120${(i + 1).toString().padStart(2, '0')}`;
+        const roomNum = `12${(i + 1).toString().padStart(2, '0')}`;
         // Skip 1201 as we'll add 1201-A and 1201-B separately
         if (roomNum === "1201") return null;
         
@@ -347,7 +347,7 @@ export class DatabaseStorage implements IStorage {
       
       // Building 1 - Second Floor (1301-1335-B) with halls 1335-A and 1335-B
       ...Array.from({ length: 34 }, (_, i) => {
-        const roomNum = `130${(i + 1).toString().padStart(2, '0')}`;
+        const roomNum = `13${(i + 1).toString().padStart(2, '0')}`;
         // Skip 1335 as we'll add 1335-A and 1335-B separately
         if (roomNum === "1335") return null;
         
@@ -387,8 +387,8 @@ export class DatabaseStorage implements IStorage {
       
       // Building 2 - Ground Floor (2101-2120)
       ...Array.from({ length: 20 }, (_, i) => ({
-        number: `210${(i + 1).toString().padStart(2, '0')}`,
-        name: `Room 210${(i + 1).toString().padStart(2, '0')}`,
+        number: `21${(i + 1).toString().padStart(2, '0')}`,
+        name: `Room 21${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[1].id,
         floor: 0,
         capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
@@ -399,8 +399,8 @@ export class DatabaseStorage implements IStorage {
       
       // Building 2 - First Floor (2201-2219)
       ...Array.from({ length: 19 }, (_, i) => ({
-        number: `220${(i + 1).toString().padStart(2, '0')}`,
-        name: `Room 220${(i + 1).toString().padStart(2, '0')}`,
+        number: `22${(i + 1).toString().padStart(2, '0')}`,
+        name: `Room 22${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[1].id,
         floor: 1,
         capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity
@@ -411,8 +411,8 @@ export class DatabaseStorage implements IStorage {
       
       // Building 2 - Second Floor (2301-2319)
       ...Array.from({ length: 19 }, (_, i) => ({
-        number: `230${(i + 1).toString().padStart(2, '0')}`,
-        name: `Room 230${(i + 1).toString().padStart(2, '0')}`,
+        number: `23${(i + 1).toString().padStart(2, '0')}`,
+        name: `Room 23${(i + 1).toString().padStart(2, '0')}`,
         buildingId: createdBuildings[1].id,
         floor: 2,
         capacity: Math.floor(Math.random() * 16) + 50, // 50-65 capacity

@@ -64,6 +64,10 @@ export function ConfigurationPanel() {
 
   const { data: rooms = [] } = useQuery<Room[]>({
     queryKey: ['/api/rooms', roomSelection.buildingId],
+    queryFn: async () => {
+      const response = await fetch(`/api/rooms?buildingId=${roomSelection.buildingId}`);
+      return response.json();
+    },
     enabled: !!roomSelection.buildingId,
   });
 
@@ -382,20 +386,26 @@ export function ConfigurationPanel() {
             <div>
               <Label>Room Selection</Label>
               <div className="space-y-2 max-h-48 overflow-y-auto border border-input rounded-md p-3">
-                {rooms.map((room) => (
-                  <label key={room.id} className="flex items-center p-2 hover:bg-accent rounded cursor-pointer">
-                    <Checkbox
-                      checked={roomSelection.selectedRoomIds.includes(room.id)}
-                      onCheckedChange={(checked) => handleRoomSelection(room.id, checked as boolean)}
-                    />
-                    <div className="ml-3 flex-1">
-                      <div className="text-sm font-medium">{room.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {room.building.name}, Floor {room.floor} • Capacity: {room.capacity}
+                {rooms.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground">
+                    Loading rooms...
+                  </div>
+                ) : (
+                  rooms.map((room) => (
+                    <label key={room.id} className="flex items-center p-2 hover:bg-accent rounded cursor-pointer">
+                      <Checkbox
+                        checked={roomSelection.selectedRoomIds.includes(room.id)}
+                        onCheckedChange={(checked) => handleRoomSelection(room.id, checked as boolean)}
+                      />
+                      <div className="ml-3 flex-1">
+                        <div className="text-sm font-medium">{room.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {room.building.name}, Floor {room.floor + 1} • Capacity: {room.capacity} • Type: {room.roomType}
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  ))
+                )}
               </div>
             </div>
           )}
