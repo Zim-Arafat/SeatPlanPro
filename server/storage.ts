@@ -32,7 +32,7 @@ import {
   type InsertInvigilatorAssignment,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, desc, asc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Departments
@@ -189,7 +189,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createStudentsBatch(studentsData: InsertStudent[]): Promise<Student[]> {
-    return await db.insert(students).values(studentsData).returning();
+    // Use onConflict to handle duplicate roll numbers
+    return await db.insert(students)
+      .values(studentsData)
+      .onConflictDoUpdate({
+        target: students.rollNumber,
+        set: {
+          name: sql`excluded.name`,
+          departmentId: sql`excluded.department_id`,
+          isActive: true
+        }
+      })
+      .returning();
   }
 
   async getExams(): Promise<ExamWithDetails[]> {

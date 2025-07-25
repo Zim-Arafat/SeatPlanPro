@@ -101,23 +101,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Students array is required" });
       }
       
-      console.log("Received students:", students.length, "students");
-      console.log("First student:", students[0]);
-      
       // Validate each student
       const validatedStudents = students.map((student: InsertStudent) => 
         insertStudentSchema.parse(student)
       );
       
-      console.log("Validated students:", validatedStudents.length);
-      
       const results = await storage.createStudentsBatch(validatedStudents);
-      console.log("Created students:", results.length);
       
       res.json({ success: true, count: results.length });
     } catch (error) {
       console.error("Student upload error:", error);
-      res.status(400).json({ error: "Failed to upload students", details: error });
+      res.status(400).json({ 
+        error: "Failed to upload students", 
+        message: "Please check the CSV format: Roll Number, Name, Department Code"
+      });
     }
   });
 
